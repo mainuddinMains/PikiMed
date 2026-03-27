@@ -7,7 +7,34 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Region {
+  BD
+  US
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum HospitalType {
+  GOVERNMENT
+  PRIVATE
+  DIAGNOSTIC
+  FQHC
+}
+
+enum InsuranceType {
+  PPO
+  HMO
+  HDHP
+  MEDICAID
+  MEDICARE
+  CHIP
 }
 
 // ─── Auth Models (NextAuth / @auth/prisma-adapter) ────────────────────────────
@@ -18,12 +45,13 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  role          Role      @default(PATIENT)
+  region        Region?
+  role          Role      @default(USER)
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]
+  reviews  Review[]
 }
 
 model Account {
@@ -64,8 +92,132 @@ model VerificationToken {
 
 // ─── Domain Models ────────────────────────────────────────────────────────────
 
-enum Role {
-  PATIENT
-  PROVIDER
-  ADMIN
+model Doctor {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  specialty        String
+  bio              String?  @db.Text
+  region           Region
+  city             String
+  district         String?  // BD only
+  state            String?  // US only
+  lat              Float?
+  lng              Float?
+  phone            String?
+  email            String?
+  website          String?
+  bmdc             String?  // BD only
+  npi              String?  // US only
+  consultFeeMin    Float?
+  consultFeeMax    Float?
+  currency         String   @default("BDT")
+  chamberSchedule  Json?
+  isAvailableToday Boolean  @default(false)
+  avgWaitMinutes   Int?
+  avgRating        Float?
+  reviewCount      Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  reviews Review[]
+}
+
+model Hospital {
+  id             String       @id @default(cuid())
+  name           String
+  slug           String       @unique
+  type           HospitalType
+  region         Region
+  address        String?
+  city           String
+  district       String?
+  state          String?
+  lat            Float?
+  lng            Float?
+  phone          String?
+  emergencyPhone String?
+  isOpen24h      Boolean      @default(false)
+  openTime       String?
+  closeTime      String?
+  specialties    String[]
+  avgRating      Float?
+  reviewCount    Int          @default(0)
+  createdAt      DateTime     @default(now())
+
+  reviews           Review[]
+  hospitalInsurance HospitalInsurance[]
+}
+
+model Review {
+  id                 String   @id @default(cuid())
+  userId             String
+  doctorId           String?
+  hospitalId         String?
+  punctualityRating  Float?
+  qualityRating      Float?
+  staffRating        Float?
+  cleanlinessRating  Float?
+  costFairnessRating Float?
+  overallRating      Float
+  body               String?  @db.Text
+  helpfulCount       Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor   Doctor?   @relation(fields: [doctorId], references: [id], onDelete: SetNull)
+  hospital Hospital? @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+}
+
+model InsurancePlan {
+  id               String        @id @default(cuid())
+  name             String
+  provider         String
+  state            String?
+  type             InsuranceType
+  deductible       Float?
+  copay            Float?
+  outOfPocketMax   Float?
+  coverageDetails  Json?
+  createdAt        DateTime      @default(now())
+
+  hospitalInsurance HospitalInsurance[]
+}
+
+model HospitalInsurance {
+  id              String @id @default(cuid())
+  hospitalId      String
+  insurancePlanId String
+
+  hospital      Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  insurancePlan InsurancePlan @relation(fields: [insurancePlanId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, insurancePlanId])
+}
+
+model AffordableClinic {
+  id              String   @id @default(cuid())
+  name            String
+  address         String?
+  city            String
+  state           String
+  lat             Float?
+  lng             Float?
+  phone           String?
+  isSliding       Boolean  @default(false)
+  isFree          Boolean  @default(false)
+  servicesOffered String[]
+  languages       String[]
+  hours           Json?
+  createdAt       DateTime @default(now())
+}
+
+model CostEstimate {
+  id                String   @id @default(cuid())
+  procedureName     String
+  region            Region
+  avgCostInsured    Float?
+  avgCostUninsured  Float?
+  currency          String   @default("USD")
+  source            String?
+  updatedAt         DateTime @updatedAt
 }
