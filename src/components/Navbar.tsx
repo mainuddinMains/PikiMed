@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAppStore, type Region } from "@/lib/store"
+import { useRegion, type Region } from "@/lib/region"
 import PikiMedLogo from "@/components/PikiMedLogo"
 
 // ── Nav links (region-conditional) ───────────────────────────────────────────
@@ -20,7 +20,7 @@ const NAV_LINKS = [
 // ── Region pill ───────────────────────────────────────────────────────────────
 
 interface RegionPillProps {
-  region: Region
+  region: Region | null
   setRegion: (r: Region) => void
   compact?: boolean
 }
@@ -71,8 +71,7 @@ function RegionPill({ region, setRegion, compact = false }: RegionPillProps) {
 
 export default function Navbar() {
   const pathname = usePathname()
-  const region    = useAppStore((s) => s.region)
-  const setRegion = useAppStore((s) => s.setRegion)
+  const { region, setRegion } = useRegion()
 
   const [scrolled,    setScrolled]    = useState(false)
   const [drawerOpen,  setDrawerOpen]  = useState(false)
@@ -111,8 +110,10 @@ export default function Navbar() {
     }
   }, [pathname])
 
+  // Show all links before hydration or when no region is selected yet
+  // (RegionSelectorModal will handle the prompt). Filter once region is known.
   const visibleLinks = NAV_LINKS.filter((l) =>
-    !hydrated || l.regions.includes(region),
+    !hydrated || region === null || l.regions.includes(region),
   )
 
   return (
