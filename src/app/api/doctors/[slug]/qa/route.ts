@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth }         from "@/auth"
-import { getClientIp }  from "@/lib/rateLimit"
+
 import { z }            from "zod"
 
 // ── In-memory store ────────────────────────────────────────────────────────────
