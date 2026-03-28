@@ -34,7 +34,7 @@ export default function InsurancePage() {
         </div>
 
         {/* Wizard card */}
-        <div className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 p-6 sm:p-8">
+        <div className="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 p-4 sm:p-8">
           <InsuranceWizard mapboxToken={mapboxToken} />
         </div>
 
