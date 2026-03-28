@@ -193,8 +193,9 @@ export default function NearbyHospitalsMap({
     }
 
     init()
+    const markersSnapshot = markersRef.current
     return () => {
-      markersRef.current.clear()
+      markersSnapshot.clear()
       map?.remove()
       mapRef.current = null
     }
