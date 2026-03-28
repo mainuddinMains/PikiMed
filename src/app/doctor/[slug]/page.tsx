@@ -90,10 +90,14 @@ export async function generateMetadata({
   return {
     title:       `${doc.name} — ${doc.specialty}`,
     description,
+    alternates: {
+      canonical: `https://pikimed.com/doctor/${params.slug}`,
+    },
     openGraph: {
       title:       `${doc.name} | PikiMed`,
       description: `${doc.specialty} in ${doc.city}`,
       type:        "profile",
+      url:         `https://pikimed.com/doctor/${params.slug}`,
     },
   }
 }
