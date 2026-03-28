@@ -310,7 +310,7 @@ export default function Step2Hospitals({ mapboxToken }: { mapboxToken?: string }
 
       {/* Map view */}
       {!isFetching && view === "map" && mapboxToken && (
-        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 h-96">
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 h-52 sm:h-96">
           <HospitalMap hospitals={filtered} center={location ?? undefined} mapboxToken={mapboxToken} />
         </div>
       )}
