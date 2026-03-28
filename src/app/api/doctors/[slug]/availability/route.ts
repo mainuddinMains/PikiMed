@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma }        from "@/lib/prisma"
 import { auth }          from "@/auth"
-import { getClientIp }  from "@/lib/rateLimit"
+
 import { z }             from "zod"
 
 // ── Per-user-per-doctor rate limit: 1 update per 4 hours ──────────────────────
