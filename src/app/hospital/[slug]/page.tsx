@@ -14,6 +14,8 @@ import ReviewsWidget from "@/components/ReviewsWidget"
 
 const MiniMap = dynamic(() => import("@/components/detail/MiniMap"), { ssr: false })
 
+export const revalidate = 3600
+
 // ── Type helpers ──────────────────────────────────────────────────────────────
 
 const TYPE_LABEL = {
