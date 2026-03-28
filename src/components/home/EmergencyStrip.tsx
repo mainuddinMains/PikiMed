@@ -13,11 +13,11 @@ const EMERGENCY_NUMBERS = [
   { label: "DGDA Hotline",       number: "10921",  color: "#8B5CF6" },
 ] as const
 
-export default function EmergencyStrip() {
+export default function EmergencyStrip({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="mx-auto max-w-4xl rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/20 overflow-hidden">
+    <div className={cn("rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/20 overflow-hidden", className)}>
       {/* Header — always visible */}
       <button
         onClick={() => setOpen((o) => !o)}
