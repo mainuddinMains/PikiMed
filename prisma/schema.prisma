@@ -52,6 +52,7 @@ model User {
   accounts Account[]
   sessions Session[]
   reviews  Review[]
+  saved    SavedProvider[]
 }
 
 model Account {
