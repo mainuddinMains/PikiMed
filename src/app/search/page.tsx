@@ -5,6 +5,7 @@ import SearchPageClient from "@/components/search/SearchPageClient"
 export const metadata: Metadata = {
   title: "Search",
   description: "Find doctors, hospitals, and clinics near you.",
+  alternates: { canonical: "https://pikimed.com/search" },
 }
 
 export default function SearchPage() {
