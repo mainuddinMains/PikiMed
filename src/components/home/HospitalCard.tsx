@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils"
 import type { Hospital } from "./types"
 import { isCurrentlyOpen } from "./types"
+import SaveButton from "@/components/SaveButton"
 
 const TYPE_LABEL: Record<Hospital["type"], string> = {
   GOVERNMENT:  "Govt.",
@@ -24,11 +25,12 @@ const TYPE_COLOR: Record<Hospital["type"], string> = {
 }
 
 interface HospitalCardProps {
-  hospital: Hospital
+  hospital:    Hospital
   distanceKm?: number
+  initialSaved?: boolean
 }
 
-export default function HospitalCard({ hospital, distanceKm }: HospitalCardProps) {
+export default function HospitalCard({ hospital, distanceKm, initialSaved = false }: HospitalCardProps) {
   const [expanded, setExpanded] = useState(false)
   const open = isCurrentlyOpen(hospital.isOpen24h, hospital.openTime, hospital.closeTime)
 
@@ -56,11 +58,14 @@ export default function HospitalCard({ hospital, distanceKm }: HospitalCardProps
             <h3 className="font-semibold text-slate-800 dark:text-slate-100 leading-snug">
               {hospital.name}
             </h3>
-            {expanded ? (
-              <ChevronUp className="size-4 text-slate-400 flex-shrink-0 mt-0.5" />
-            ) : (
-              <ChevronDown className="size-4 text-slate-400 flex-shrink-0 mt-0.5" />
-            )}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <SaveButton hospitalId={hospital.id} initialSaved={initialSaved} size="sm" />
+              {expanded ? (
+                <ChevronUp className="size-4 text-slate-400 mt-0.5" />
+              ) : (
+                <ChevronDown className="size-4 text-slate-400 mt-0.5" />
+              )}
+            </div>
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
