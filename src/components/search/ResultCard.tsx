@@ -5,6 +5,7 @@ import { Star, Clock, Phone, MapPin, Navigation, BadgeCheck, Stethoscope, Buildi
 import { cn } from "@/lib/utils"
 import { isCurrentlyOpen } from "@/components/home/types"
 import type { SearchItem } from "@/app/api/search/route"
+import SaveButton from "@/components/SaveButton"
 
 const HOSPITAL_TYPE_LABEL = {
   GOVERNMENT:  "Govt.",
@@ -24,16 +25,18 @@ interface ResultCardProps {
   item:          SearchItem
   distanceKm?:   number
   inNetwork?:    boolean   // US: insurance match
+  savedIds?:     Set<string>   // pre-fetched saved entity IDs
 }
 
-export default function ResultCard({ item, distanceKm, inNetwork }: ResultCardProps) {
-  if (item.itemType === "doctor") return <DoctorCard item={item} distanceKm={distanceKm} inNetwork={inNetwork} />
-  return <HospitalCard item={item} distanceKm={distanceKm} />
+export default function ResultCard({ item, distanceKm, inNetwork, savedIds }: ResultCardProps) {
+  const isSaved = savedIds?.has(item.id) ?? false
+  if (item.itemType === "doctor") return <DoctorCard item={item} distanceKm={distanceKm} inNetwork={inNetwork} initialSaved={isSaved} />
+  return <HospitalCard item={item} distanceKm={distanceKm} initialSaved={isSaved} />
 }
 
 // ── Doctor card ───────────────────────────────────────────────────────────────
 
-function DoctorCard({ item, distanceKm, inNetwork }: ResultCardProps & { item: Extract<SearchItem, { itemType: "doctor" }> }) {
+function DoctorCard({ item, distanceKm, inNetwork, initialSaved = false }: ResultCardProps & { item: Extract<SearchItem, { itemType: "doctor" }>; initialSaved?: boolean }) {
   const initials = item.name.split(" ").slice(0, 2).map((n) => n[0]).join("")
 
   const feeLabel =
@@ -67,7 +70,7 @@ function DoctorCard({ item, distanceKm, inNetwork }: ResultCardProps & { item: E
             <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{item.specialty}</p>
           </div>
 
-          {/* Badges */}
+          {/* Badges + Save */}
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             {item.isAvailableToday && (
               <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">
@@ -80,6 +83,7 @@ function DoctorCard({ item, distanceKm, inNetwork }: ResultCardProps & { item: E
                 In-Network
               </span>
             )}
+            <SaveButton doctorId={item.id} initialSaved={initialSaved} size="sm" />
           </div>
         </div>
 
