@@ -71,8 +71,6 @@ const CATEGORIES = [
   { key: "costFairnessRating", label: "Cost Fairness" },
 ] as const
 
-type CategoryKey = (typeof CATEGORIES)[number]["key"]
-
 interface FormState {
   overallRating:      number
   punctualityRating:  number
