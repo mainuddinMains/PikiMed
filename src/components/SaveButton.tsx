@@ -56,6 +56,7 @@ export default function SaveButton({
     <button
       onClick={toggle}
       disabled={loading}
+      aria-label={saved ? "Remove from saved" : "Save provider"}
       title={saved ? "Remove from saved" : "Save provider"}
       className={cn(
         "flex items-center justify-center rounded-lg transition-all",
