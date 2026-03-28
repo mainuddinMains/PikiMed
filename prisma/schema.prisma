@@ -121,6 +121,7 @@ model Doctor {
   createdAt        DateTime @default(now())
 
   reviews Review[]
+  savedBy SavedProvider[]
 }
 
 model Hospital {
@@ -147,6 +148,7 @@ model Hospital {
 
   reviews           Review[]
   hospitalInsurance HospitalInsurance[]
+  savedBy           SavedProvider[]
 }
 
 model Review {
@@ -221,4 +223,19 @@ model CostEstimate {
   currency          String   @default("USD")
   source            String?
   updatedAt         DateTime @updatedAt
+}
+
+model SavedProvider {
+  id         String   @id @default(cuid())
+  userId     String
+  doctorId   String?
+  hospitalId String?
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctor   Doctor?   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital Hospital? @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, doctorId])
+  @@unique([userId, hospitalId])
 }
