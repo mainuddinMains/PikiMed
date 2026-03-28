@@ -78,7 +78,7 @@ export default function LocationBar({ className }: LocationBarProps) {
   const [editing,   setEditing]   = useState(false)
   const [inputVal,  setInputVal]  = useState("")
   const [searching, setSearching] = useState(false)
-  const [_tick,     setTick]      = useState(0)
+  const [, setTick] = useState(0)
   const inputRef   = useRef<HTMLInputElement>(null)
 
   // Re-render every minute to update "X min ago"
