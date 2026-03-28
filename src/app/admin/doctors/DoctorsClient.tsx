@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useOptimistic } from "react"
+import { useState, useTransition } from "react"
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Search } from "lucide-react"
 import toast from "react-hot-toast"
 import Modal from "@/app/admin/_components/Modal"
@@ -237,6 +237,7 @@ export default function DoctorsClient({ doctors: initial }: { doctors: DoctorRow
                         onClick={() => openEdit(d)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
                         title="Edit"
+                        aria-label="Edit doctor"
                       >
                         <Pencil className="size-3.5" />
                       </button>
@@ -245,6 +246,7 @@ export default function DoctorsClient({ doctors: initial }: { doctors: DoctorRow
                         disabled={pending}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
                         title="Delete"
+                        aria-label="Delete doctor"
                       >
                         <Trash2 className="size-3.5" />
                       </button>
