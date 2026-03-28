@@ -48,6 +48,14 @@ async function main() {
   await prisma.user.deleteMany()
 
   // ── Users ────────────────────────────────────────────────────────────────────
+  // ── Admin user ───────────────────────────────────────────────────────────────
+  await prisma.user.upsert({
+    where:  { email: "admin@pikimed.com" },
+    update: { role: "ADMIN" },
+    create: { name: "PikiMed Admin", email: "admin@pikimed.com", role: "ADMIN" },
+  })
+  console.log("  ✓ Admin user (admin@pikimed.com)")
+
   const [u1, u2, u3, u4, u5, u6, u7, u8, u9, u10] = await Promise.all([
     // Bangladesh
     prisma.user.create({ data: { name: "Rahim Uddin",    email: "rahim@pikimed.test",   region: Region.BD } }),
