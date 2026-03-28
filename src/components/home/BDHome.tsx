@@ -34,8 +34,8 @@ export default function BDHome() {
       {/* ── Content ────────────────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-4xl px-4 py-8 space-y-10">
 
-        {/* Emergency strip */}
-        <EmergencyStrip />
+        {/* Emergency strip — bleeds to screen edge on mobile */}
+        <EmergencyStrip className="-mx-4 rounded-none sm:mx-0 sm:rounded-2xl" />
 
         {/* Nearby hospitals */}
         <section>
