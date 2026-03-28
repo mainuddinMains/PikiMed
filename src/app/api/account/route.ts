@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 // ── DELETE /api/account — permanently delete the authenticated user ────────────
 
-export async function DELETE(_req: NextRequest) {
+export async function DELETE(_req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
