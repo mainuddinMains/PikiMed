@@ -17,6 +17,8 @@ import type { ChamberScheduleData } from "@/components/ChamberSchedule"
 
 const MiniMap = dynamic(() => import("@/components/detail/MiniMap"), { ssr: false })
 
+export const revalidate = 3600
+
 // ── Degree extraction ──────────────────────────────────────────────────────────
 
 const DEGREE_RE = /\b(MBBS|BDS|FCPS|MRCP|FRCP|FRCS|FRCOG|FACS|FACP|MD|MS|DM|DLO|DCH|DGO|DA|MPH|PhD|MCPS|DTCD)\b/g
