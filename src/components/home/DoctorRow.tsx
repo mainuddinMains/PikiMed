@@ -30,7 +30,7 @@ function DoctorCard({ doctor }: DoctorCardProps) {
     <Link
       href={`/doctors/${doctor.slug}`}
       className={cn(
-        "flex-shrink-0 w-52 rounded-2xl border border-slate-200 dark:border-slate-700",
+        "flex-shrink-0 w-44 sm:w-52 snap-start rounded-2xl border border-slate-200 dark:border-slate-700",
         "bg-white dark:bg-slate-900 p-4 space-y-2",
         "hover:shadow-md hover:border-[#06B6D4]/40 transition-all duration-150",
       )}
@@ -108,7 +108,7 @@ export default function DoctorRow({ region, inNetworkOnly = false }: DoctorRowPr
 
   return (
     <div>
-      <div className="flex overflow-x-auto gap-3 pb-3 -mx-1 px-1 scrollbar-hide">
+      <div className="flex overflow-x-auto gap-3 pb-3 -mx-1 px-1 scrollbar-hide scroll-smooth-ios snap-x snap-mandatory">
         {isLoading &&
           Array.from({ length: 5 }).map((_, i) => <DoctorCardSkeleton key={i} />)}
 
