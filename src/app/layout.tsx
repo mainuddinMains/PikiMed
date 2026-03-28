@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import "./globals.css"
-import Providers from "@/components/Providers"
-import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
+import Providers  from "@/components/Providers"
+import Navbar     from "@/components/Navbar"
+import Footer     from "@/components/Footer"
+import BottomNav  from "@/components/BottomNav"
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ const geistMono = localFont({
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json",
   title: {
     default: "PikiMed — The smarter way to find care.",
     template: "%s | PikiMed",
@@ -43,9 +45,13 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: light)", color: "#06B6D4" },
     { media: "(prefers-color-scheme: dark)",  color: "#020817" },
   ],
+  width:          "device-width",
+  initialScale:   1,
+  minimumScale:   1,
+  viewportFit:    "cover",
 }
 
 // ── Layout ────────────────────────────────────────────────────────────────────
@@ -65,12 +71,15 @@ export default function RootLayout({
           {/* Sticky navbar — 64px (h-16) tall */}
           <Navbar />
 
-          {/* Page content — offset by navbar height */}
-          <main className="flex-1 pt-16">
+          {/* Page content — offset by navbar height, extra bottom pad for mobile bottom nav */}
+          <main className="flex-1 pt-16 pb-16 md:pb-0">
             {children}
           </main>
 
           <Footer />
+
+          {/* Mobile-only bottom navigation */}
+          <BottomNav />
         </Providers>
       </body>
     </html>
