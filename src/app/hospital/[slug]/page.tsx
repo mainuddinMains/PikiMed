@@ -66,10 +66,14 @@ export async function generateMetadata({
   return {
     title:       `${h.name} — ${TYPE_LABEL[h.type]}`,
     description: `${h.name} in ${h.city}. Find departments, insurance, directions, and patient reviews on PikiMed.`,
+    alternates: {
+      canonical: `https://pikimed.com/hospital/${params.slug}`,
+    },
     openGraph: {
       title:       `${h.name} | PikiMed`,
       description: `${TYPE_LABEL[h.type]} in ${h.city}`,
       type:        "website",
+      url:         `https://pikimed.com/hospital/${params.slug}`,
     },
   }
 }
