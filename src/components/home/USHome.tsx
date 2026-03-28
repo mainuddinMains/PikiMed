@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShieldCheck, DollarSign, MapPin, Star, BadgeCheck } from "lucide-react"
+import { ShieldCheck, DollarSign, MapPin, BadgeCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import SearchBar from "./SearchBar"
 import DoctorRow from "./DoctorRow"
