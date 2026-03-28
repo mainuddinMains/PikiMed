@@ -37,7 +37,13 @@ async function fetchSearch(params: {
     available: String(params.filters.available),
     page:      String(params.page),
   })
-  const res = await fetch(`/api/search?${sp}`)
+  let res: Response
+  try {
+    res = await fetch(`/api/search?${sp}`)
+  } catch {
+    toast.error("Connection issue — please check your internet")
+    throw new Error("Network error")
+  }
   if (!res.ok) throw new Error("Search failed")
   return res.json()
 }
