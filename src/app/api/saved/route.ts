@@ -3,13 +3,14 @@ import { z }             from "zod"
 import { prisma }        from "@/lib/prisma"
 import { auth }          from "@/auth"
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit"
+import { apiError } from "@/lib/apiError"
 
 // ── GET /api/saved — all saved providers for the current user ─────────────────
 
 export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return apiError("Unauthorized", "UNAUTHENTICATED", 401)
   }
 
   const saved = await prisma.savedProvider.findMany({
@@ -54,21 +55,21 @@ const ToggleSchema = z
 
 export async function POST(req: NextRequest) {
   const { ok } = checkRateLimit(getClientIp(req))
-  if (!ok) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 })
+  if (!ok) return apiError("Rate limit exceeded", "RATE_LIMITED", 429)
 
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return apiError("Unauthorized", "UNAUTHENTICATED", 401)
   }
 
   let body: unknown
   try { body = await req.json() } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    return apiError("Invalid JSON", "INVALID_JSON", 400)
   }
 
   const parsed = ToggleSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+    return apiError("Validation failed", "VALIDATION_ERROR", 422)
   }
 
   const { doctorId, hospitalId } = parsed.data
