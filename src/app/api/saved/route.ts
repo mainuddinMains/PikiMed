@@ -7,7 +7,7 @@ import { apiError } from "@/lib/apiError"
 
 // ── GET /api/saved — all saved providers for the current user ─────────────────
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const session = await auth()
   if (!session?.user?.id) {
     return apiError("Unauthorized", "UNAUTHENTICATED", 401)
