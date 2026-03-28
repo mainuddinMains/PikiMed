@@ -72,13 +72,13 @@ interface LocationBarProps {
 type State = "idle" | "requesting" | "error"
 
 export default function LocationBar({ className }: LocationBarProps) {
-  const { location, setLocation, clear } = useBDLocation()
+  const { location, setLocation } = useBDLocation()
 
   const [geoState,  setGeoState]  = useState<State>("idle")
   const [editing,   setEditing]   = useState(false)
   const [inputVal,  setInputVal]  = useState("")
   const [searching, setSearching] = useState(false)
-  const [tick,      setTick]      = useState(0)
+  const [_tick,     setTick]      = useState(0)
   const inputRef   = useRef<HTMLInputElement>(null)
 
   // Re-render every minute to update "X min ago"
