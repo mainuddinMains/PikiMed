@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useTransition, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
 import { signOut } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import {
-  User, Bookmark, Settings, Star, Trash2, Pencil, Check, X,
+  Bookmark, Settings, Star, Trash2, Pencil, Check, X,
   LogOut, AlertTriangle, MapPin, Building2, Stethoscope,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -109,7 +108,7 @@ export default function ProfileClient({ user, reviews: initialReviews, saved: in
 
       {/* Tab content */}
       {tab === "reviews" && (
-        <ReviewsTab reviews={reviews} setReviews={setReviews} userId={user.id} />
+        <ReviewsTab reviews={reviews} setReviews={setReviews} />
       )}
       {tab === "saved" && (
         <SavedTab saved={saved} setSaved={setSaved} />
@@ -126,11 +125,9 @@ export default function ProfileClient({ user, reviews: initialReviews, saved: in
 function ReviewsTab({
   reviews,
   setReviews,
-  userId,
 }: {
   reviews: ReviewWithUser[]
   setReviews: React.Dispatch<React.SetStateAction<ReviewWithUser[]>>
-  userId: string
 }) {
   if (reviews.length === 0) {
     return (
@@ -401,7 +398,6 @@ function SavedTab({
 // ── Settings tab ───────────────────────────────────────────────────────────────
 
 function SettingsTab({ user }: { user: ProfileClientProps["user"] }) {
-  const router                    = useRouter()
   const [confirm, setConfirm]     = useState(false)
   const [deleting, startDelete]   = useTransition()
   const [deleteError, setDeleteError] = useState("")
