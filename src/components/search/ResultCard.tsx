@@ -146,7 +146,7 @@ function DoctorCard({ item, distanceKm, inNetwork, initialSaved = false }: Resul
 
 // ── Hospital card ─────────────────────────────────────────────────────────────
 
-function HospitalCard({ item, distanceKm }: ResultCardProps & { item: Extract<SearchItem, { itemType: "hospital" }> }) {
+function HospitalCard({ item, distanceKm, initialSaved = false }: ResultCardProps & { item: Extract<SearchItem, { itemType: "hospital" }>; initialSaved?: boolean }) {
   const open = isCurrentlyOpen(item.isOpen24h, item.openTime, item.closeTime)
 
   return (
@@ -169,16 +169,19 @@ function HospitalCard({ item, distanceKm }: ResultCardProps & { item: Extract<Se
           <h3 className="font-semibold text-slate-800 dark:text-slate-100 leading-snug truncate group-hover:text-[#06B6D4] transition-colors">
             {item.name}
           </h3>
-          <span
-            className={cn(
-              "flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium",
-              open
-                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-            )}
-          >
-            {item.isOpen24h ? "24h" : open ? "Open" : "Closed"}
-          </span>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <span
+              className={cn(
+                "text-xs px-2 py-0.5 rounded-full font-medium",
+                open
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+              )}
+            >
+              {item.isOpen24h ? "24h" : open ? "Open" : "Closed"}
+            </span>
+            <SaveButton hospitalId={item.id} initialSaved={initialSaved} size="sm" />
+          </div>
         </div>
 
         {/* Meta */}
