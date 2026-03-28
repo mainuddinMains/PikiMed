@@ -52,7 +52,7 @@ export default function MiniMap({ lat, lng, label, mapboxToken }: MiniMapProps) 
 
   return (
     <div className="space-y-2">
-      <div ref={containerRef} className="w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700" />
+      <div ref={containerRef} className="w-full h-40 sm:h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700" />
       <a
         href={directionsUrl}
         target="_blank"
