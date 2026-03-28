@@ -1,33 +1,62 @@
-import { notFound } from "next/navigation"
+import { notFound }      from "next/navigation"
 import type { Metadata } from "next"
-import dynamic from "next/dynamic"
-import Link from "next/link"
+import dynamic           from "next/dynamic"
+import Link              from "next/link"
 import {
-  Phone, Mail, Globe, Clock, Calendar, BadgeCheck,
-  MapPin, Stethoscope, AlertCircle,
+  Phone, Mail, Globe, Calendar, BadgeCheck,
+  MapPin, AlertCircle, ExternalLink,
 } from "lucide-react"
-import { prisma } from "@/lib/prisma"
-import { cn } from "@/lib/utils"
-import StarRating from "@/components/detail/StarRating"
-import ReviewsWidget from "@/components/ReviewsWidget"
+import { prisma }        from "@/lib/prisma"
+import { cn }            from "@/lib/utils"
+import StarRating        from "@/components/detail/StarRating"
+import ReviewsWidget     from "@/components/ReviewsWidget"
+import ChamberSchedule   from "@/components/ChamberSchedule"
+import DoctorAvailability from "@/components/DoctorAvailability"
+import PatientQA         from "@/components/PatientQA"
+import type { ChamberScheduleData } from "@/components/ChamberSchedule"
 
 const MiniMap = dynamic(() => import("@/components/detail/MiniMap"), { ssr: false })
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ── Degree extraction ──────────────────────────────────────────────────────────
 
-type ChamberSlot = {
-  start?:   string
-  end?:     string
-  morning?: { start: string; end: string }
-  evening?: { start: string; end: string }
-  maxPatients?: number
+const DEGREE_RE = /\b(MBBS|BDS|FCPS|MRCP|FRCP|FRCS|FRCOG|FACS|FACP|MD|MS|DM|DLO|DCH|DGO|DA|MPH|PhD|MCPS|DTCD)\b/g
+
+function extractDegrees(bio: string | null): string[] {
+  if (!bio) return []
+  return Array.from(new Set(bio.match(DEGREE_RE) ?? []))
 }
 
-type ChamberSchedule = Record<string, ChamberSlot>
+// ── Chamber schedule parsing ───────────────────────────────────────────────────
 
-function parseChamberSchedule(val: unknown): ChamberSchedule {
+function parseChamberSchedule(val: unknown): ChamberScheduleData {
   if (!val || typeof val !== "object" || Array.isArray(val)) return {}
-  return val as ChamberSchedule
+  return val as ChamberScheduleData
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function fmtFee(min: number | null, max: number | null, currency: string) {
+  if (min == null) return "—"
+  const sym = currency === "BDT" ? "৳" : "$"
+  return max ? `${sym}${min.toLocaleString()}–${max.toLocaleString()}` : `${sym}${min.toLocaleString()}+`
+}
+
+// Multi-location pins from chamber schedule
+interface ClinicPin { name: string; lat: number; lng: number }
+
+function extractClinicPins(chambers: ChamberScheduleData): ClinicPin[] {
+  const seen = new Set<string>()
+  const pins: ClinicPin[] = []
+  for (const slot of Object.values(chambers)) {
+    if (slot.lat != null && slot.lng != null && slot.location) {
+      const key = `${slot.lat}:${slot.lng}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        pins.push({ name: slot.location, lat: slot.lat, lng: slot.lng })
+      }
+    }
+  }
+  return pins
 }
 
 // ── Static params + metadata ──────────────────────────────────────────────────
@@ -57,7 +86,7 @@ export async function generateMetadata({
     `Find ${doc.name}, ${doc.specialty} in ${doc.city}. Book an appointment on PikiMed.`
 
   return {
-    title: `${doc.name} — ${doc.specialty}`,
+    title:       `${doc.name} — ${doc.specialty}`,
     description,
     openGraph: {
       title:       `${doc.name} | PikiMed`,
@@ -65,24 +94,6 @@ export async function generateMetadata({
       type:        "profile",
     },
   }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const DAY_ORDER = ["saturday","sunday","monday","tuesday","wednesday","thursday","friday"]
-
-function fmtTime(t: string | undefined) {
-  if (!t) return "—"
-  const [h, m] = t.split(":").map(Number)
-  const ampm = h >= 12 ? "PM" : "AM"
-  const h12  = h % 12 || 12
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`
-}
-
-function fmtFee(min: number | null, max: number | null, currency: string) {
-  if (min == null) return "—"
-  const sym = currency === "BDT" ? "৳" : "$"
-  return max ? `${sym}${min.toLocaleString()}–${max.toLocaleString()}` : `${sym}${min.toLocaleString()}+`
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -101,16 +112,22 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
 
   if (!doctor) notFound()
 
-  const isBD      = doctor.region === "BD"
-  const initials  = doctor.name.split(" ").slice(0, 2).map((n) => n[0]).join("")
-  const chambers  = parseChamberSchedule(doctor.chamberSchedule)
-  const feeLabel  = fmtFee(doctor.consultFeeMin, doctor.consultFeeMax, doctor.currency)
-  const mapToken  = process.env.MAPBOX_TOKEN ?? ""
+  const isBD     = doctor.region === "BD"
+  const initials = doctor.name.split(" ").slice(0, 2).map((n) => n[0]).join("")
+  const chambers = parseChamberSchedule(doctor.chamberSchedule)
+  const feeLabel = fmtFee(doctor.consultFeeMin, doctor.consultFeeMax, doctor.currency)
+  const mapToken = process.env.MAPBOX_TOKEN ?? ""
+  const degrees  = extractDegrees(doctor.bio)
+  const clinicPins = extractClinicPins(chambers)
+
+  // Primary map location: first chamber pin with coords, else doctor.lat/lng
+  const primaryLat = clinicPins[0]?.lat ?? doctor.lat
+  const primaryLng = clinicPins[0]?.lng ?? doctor.lng
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
 
-      {/* ── Hero header ────────────────────────────────────────────────────────── */}
+      {/* ── Hero ──────────────────────────────────────────────────────────────── */}
       <div className={cn(
         "bg-gradient-to-br px-4 pt-10 pb-8",
         isBD
@@ -137,13 +154,12 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
               {initials}
             </div>
 
-            {/* Info */}
             <div className="flex-1 min-w-0">
+              {/* Name + verified */}
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 sm:text-3xl">
                   {doctor.name}
                 </h1>
-                {/* Verified badge */}
                 {(doctor.bmdc || doctor.npi) && (
                   <span className="flex items-center gap-1 text-xs font-semibold text-[#06B6D4] bg-[#06B6D4]/10 px-2 py-0.5 rounded-full">
                     <BadgeCheck className="size-3.5" />
@@ -152,7 +168,22 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
                 )}
               </div>
 
-              <p className="text-base text-slate-500 dark:text-slate-400 mb-3">{doctor.specialty}</p>
+              {/* Specialty */}
+              <p className="text-base text-slate-500 dark:text-slate-400 mb-2">{doctor.specialty}</p>
+
+              {/* Degree badges */}
+              {degrees.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {degrees.map((d) => (
+                    <span
+                      key={d}
+                      className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 tracking-wide"
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Rating */}
               {doctor.avgRating != null && (
@@ -181,7 +212,7 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
         </div>
       </div>
 
-      {/* ── Content ────────────────────────────────────────────────────────────── */}
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-4xl px-4 py-8 space-y-6">
 
         {/* Quick stats */}
@@ -202,20 +233,40 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
           />
         </div>
 
-        {/* ── BD-specific ─────────────────────────────────────────────────────── */}
+        {/* ── BD-specific section ──────────────────────────────────────────── */}
         {isBD && (
           <>
-            {/* BMDC */}
+            {/* Community availability */}
+            <DoctorAvailability
+              doctorSlug={doctor.slug}
+              initialIsAvailableToday={doctor.isAvailableToday}
+              initialAvgWaitMinutes={doctor.avgWaitMinutes}
+            />
+
+            {/* BMDC registration */}
             {doctor.bmdc && (
-              <Card title="Registration">
-                <div className="flex items-center gap-3">
-                  <BadgeCheck className="size-5 text-[#06B6D4]" />
-                  <div>
-                    <p className="text-xs text-slate-500">BMDC Registration Number</p>
-                    <p className="font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
-                      {doctor.bmdc}
-                    </p>
+              <Card title="BMDC Registration">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
+                      <BadgeCheck className="size-5 text-[#06B6D4]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Registration Number</p>
+                      <p className="font-bold text-slate-800 dark:text-slate-100 font-mono text-lg tracking-wider">
+                        {doctor.bmdc}
+                      </p>
+                    </div>
                   </div>
+                  <a
+                    href={`https://bmdc.org.bd/doctor-registration-verify/?regno=${encodeURIComponent(doctor.bmdc)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#06B6D4]/30 text-[#06B6D4] text-xs font-bold hover:bg-[#06B6D4]/5 transition-colors"
+                  >
+                    <ExternalLink className="size-3.5" />
+                    Verify on BMDC
+                  </a>
                 </div>
               </Card>
             )}
@@ -223,59 +274,49 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
             {/* Chamber schedule */}
             {Object.keys(chambers).length > 0 && (
               <Card title="Chamber Schedule">
-                <div className="overflow-x-auto -mx-1">
-                  <table className="w-full text-sm border-collapse min-w-[340px]">
-                    <thead>
-                      <tr className="text-xs text-slate-500 uppercase tracking-wide">
-                        <th className="text-left py-2 pr-4 font-semibold">Day</th>
-                        <th className="text-left py-2 pr-4 font-semibold">Morning</th>
-                        <th className="text-left py-2 pr-4 font-semibold">Evening</th>
-                        <th className="text-right py-2 font-semibold">Max Patients</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {DAY_ORDER
-                        .filter((d) => d in chambers)
-                        .map((day) => {
-                          const slot = chambers[day]
-                          const morn = slot.morning
-                            ? `${fmtTime(slot.morning.start)} – ${fmtTime(slot.morning.end)}`
-                            : slot.start
-                              ? `${fmtTime(slot.start)} – ${fmtTime(slot.end)}`
-                              : "—"
-                          const eve = slot.evening
-                            ? `${fmtTime(slot.evening.start)} – ${fmtTime(slot.evening.end)}`
-                            : "—"
-
-                          return (
-                            <tr key={day} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                              <td className="py-2.5 pr-4 font-medium text-slate-700 dark:text-slate-200 capitalize">
-                                {day.charAt(0).toUpperCase() + day.slice(1)}
-                              </td>
-                              <td className="py-2.5 pr-4 text-slate-600 dark:text-slate-300 tabular-nums">
-                                {morn}
-                              </td>
-                              <td className="py-2.5 pr-4 text-slate-600 dark:text-slate-300 tabular-nums">
-                                {eve}
-                              </td>
-                              <td className="py-2.5 text-right text-slate-500 tabular-nums">
-                                {slot.maxPatients ?? "—"}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="mt-3 text-xs text-slate-400">
-                  Call to confirm today's schedule before visiting.
-                </p>
+                <ChamberSchedule chambers={chambers} />
               </Card>
             )}
+
+            {/* Clinic locations map */}
+            {(clinicPins.length > 0 || (primaryLat != null && primaryLng != null)) && mapToken && (
+              <Card title={clinicPins.length > 1 ? `Clinic Locations (${clinicPins.length})` : "Location"}>
+                {/* Location chips */}
+                {clinicPins.length > 1 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {clinicPins.map((pin) => (
+                      <a
+                        key={`${pin.lat}:${pin.lng}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${pin.lat},${pin.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-[#06B6D4] hover:text-[#06B6D4] transition-all"
+                      >
+                        <MapPin className="size-3" />
+                        {pin.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {primaryLat != null && primaryLng != null && (
+                  <MiniMap
+                    lat={primaryLat}
+                    lng={primaryLng}
+                    label={clinicPins[0]?.name ?? doctor.name}
+                    mapboxToken={mapToken}
+                  />
+                )}
+              </Card>
+            )}
+
+            {/* Patient Q&A */}
+            <Card title="Patient Updates">
+              <PatientQA doctorSlug={doctor.slug} />
+            </Card>
           </>
         )}
 
-        {/* ── US-specific ─────────────────────────────────────────────────────── */}
+        {/* ── US-specific ──────────────────────────────────────────────────── */}
         {!isBD && (
           <Card title="Provider Information">
             <div className="space-y-4">
@@ -291,7 +332,6 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
                 </div>
               )}
 
-              {/* Insurance placeholder — schema has no doctor-insurance relation */}
               <div className="rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4">
                 <div className="flex gap-3">
                   <AlertCircle className="size-5 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -300,8 +340,8 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
                       Insurance Acceptance
                     </p>
                     <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Insurance details are not yet linked to this provider profile. Contact the
-                      office directly to confirm your plan is accepted before booking.
+                      Insurance details are not yet linked to this provider. Contact the office
+                      directly to confirm your plan is accepted before booking.
                     </p>
                     {doctor.phone && (
                       <a
@@ -319,7 +359,26 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
           </Card>
         )}
 
-        {/* ── About ───────────────────────────────────────────────────────────── */}
+        {/* US location map */}
+        {!isBD && doctor.lat != null && doctor.lng != null && mapToken && (
+          <Card title="Location">
+            <div className="flex items-start gap-2 mb-3 text-sm text-slate-600 dark:text-slate-300">
+              <MapPin className="size-4 text-slate-400 flex-shrink-0 mt-0.5" />
+              <span>
+                {doctor.city}
+                {doctor.state ? `, ${doctor.state}` : ""}
+              </span>
+            </div>
+            <MiniMap
+              lat={doctor.lat}
+              lng={doctor.lng}
+              label={doctor.name}
+              mapboxToken={mapToken}
+            />
+          </Card>
+        )}
+
+        {/* About */}
         {doctor.bio && (
           <Card title="About">
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -328,7 +387,7 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
           </Card>
         )}
 
-        {/* ── Contact ─────────────────────────────────────────────────────────── */}
+        {/* Contact */}
         {(doctor.phone || doctor.email || doctor.website) && (
           <Card title="Contact">
             <div className="flex flex-wrap gap-4">
@@ -365,38 +424,7 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
           </Card>
         )}
 
-        {/* ── Location map ─────────────────────────────────────────────────────── */}
-        {doctor.lat != null && doctor.lng != null && (
-          <Card title="Location">
-            <div className="flex items-start gap-2 mb-3 text-sm text-slate-600 dark:text-slate-300">
-              <MapPin className="size-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <span>
-                {doctor.city}
-                {doctor.district ? `, ${doctor.district}` : ""}
-                {doctor.state ? `, ${doctor.state}` : ""}
-              </span>
-            </div>
-            {mapToken ? (
-              <MiniMap
-                lat={doctor.lat}
-                lng={doctor.lng}
-                label={doctor.name}
-                mapboxToken={mapToken}
-              />
-            ) : (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${doctor.lat},${doctor.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-[#06B6D4] hover:underline"
-              >
-                Open in Google Maps →
-              </a>
-            )}
-          </Card>
-        )}
-
-        {/* ── Reviews ──────────────────────────────────────────────────────────── */}
+        {/* Reviews */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-6">
           <ReviewsWidget
             doctorId={doctor.id}
@@ -414,15 +442,15 @@ export default async function DoctorPage({ params }: { params: { slug: string } 
   )
 }
 
-// ── Shared UI primitives ──────────────────────────────────────────────────────
+// ── Shared UI ─────────────────────────────────────────────────────────────────
 
 function Card({
   title,
   children,
   className,
 }: {
-  title?: string
-  children: React.ReactNode
+  title?:    string
+  children:  React.ReactNode
   className?: string
 }) {
   return (
@@ -431,9 +459,7 @@ function Card({
       className,
     )}>
       {title && (
-        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">
-          {title}
-        </h2>
+        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">{title}</h2>
       )}
       {children}
     </div>
@@ -445,8 +471,8 @@ function StatCard({
   value,
   valueClass,
 }: {
-  label: string
-  value: string
+  label:      string
+  value:      string
   valueClass?: string
 }) {
   return (
