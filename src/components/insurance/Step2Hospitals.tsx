@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import dynamic from "next/dynamic"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -56,7 +56,7 @@ async function geocode(address: string): Promise<{ lat: number; lng: number; lab
 
 // ── Hospital card ──────────────────────────────────────────────────────────────
 
-function HospitalCard({ h, mapboxToken }: { h: HospitalResult; mapboxToken?: string }) {
+function HospitalCard({ h }: { h: HospitalResult }) {
   const badgeClass = h.inNetwork
     ? "bg-green-100 text-green-700 border border-green-200"
     : "bg-rose-100 text-rose-700 border border-rose-200"
@@ -323,7 +323,7 @@ export default function Step2Hospitals({ mapboxToken }: { mapboxToken?: string }
           ) : (
             <div className="space-y-3">
               {filtered.map((h) => (
-                <HospitalCard key={h.id} h={h} mapboxToken={mapboxToken} />
+                <HospitalCard key={h.id} h={h} />
               ))}
             </div>
           )}
