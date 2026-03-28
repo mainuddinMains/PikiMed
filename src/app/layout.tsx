@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   keywords: ["doctor finder", "hospital search", "healthcare Bangladesh", "US healthcare", "insurance", "PikiMed"],
   authors: [{ name: "PikiMed" }],
   metadataBase: new URL("https://pikimed.com"),
+  alternates: {
+    canonical: "https://pikimed.com",
+  },
   openGraph: {
     siteName: "PikiMed",
     type: "website",
