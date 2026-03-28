@@ -11,12 +11,6 @@ import {
 
 // ── Formatting ─────────────────────────────────────────────────────────────────
 
-function fmtBDT(n: number | null, free?: boolean): string {
-  if (free || n === 0) return "Free"
-  if (n == null)       return "—"
-  return `৳${n.toLocaleString("en-BD")}`
-}
-
 function fmtRange(low: number | null, high: number | null, free?: boolean): string {
   if (free || (low === 0 && (high == null || high <= 10))) return "Free / ৳0"
   if (low == null && high == null) return "—"
