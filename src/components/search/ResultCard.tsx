@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Star, Clock, Phone, MapPin, Navigation, BadgeCheck, Stethoscope, Building2 } from "lucide-react"
+import { Star, Clock, Phone, MapPin, Navigation, BadgeCheck, Building2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { isCurrentlyOpen } from "@/components/home/types"
 import type { SearchItem } from "@/app/api/search/route"
