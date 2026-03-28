@@ -203,7 +203,7 @@ export default function Step1Coverage() {
       {plan && (
         <>
           {/* Metric cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <MetricCard label="Deductible"       value={fmt(plan.deductible)}     sub="per year" />
             <MetricCard label="Copay"             value={fmt(plan.copay)}          sub="per visit" />
             <MetricCard label="Out-of-Pocket Max" value={fmt(plan.outOfPocketMax)} sub="per year" />
@@ -247,7 +247,7 @@ export default function Step1Coverage() {
 
           {/* In-network vs out-of-network comparison */}
           <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700">
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-700">
               <div className="p-4 bg-green-50 dark:bg-green-900/10">
                 <p className="text-xs font-bold text-green-700 dark:text-green-400 mb-2 uppercase tracking-wide">In-Network</p>
                 <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
