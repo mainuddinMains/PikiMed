@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Block admin panel from indexing
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+
+# Sitemap location
+Sitemap: https://pikimed.com/sitemap.xml
