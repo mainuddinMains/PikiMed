@@ -134,10 +134,14 @@ function ReviewsTab({
 }) {
   if (reviews.length === 0) {
     return (
-      <div className="text-center py-16 text-slate-400">
-        <Star className="size-10 mx-auto mb-3 opacity-30" />
-        <p className="font-medium">No reviews yet</p>
-        <p className="text-sm mt-1">Reviews you write will appear here.</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <svg width="100" height="88" viewBox="0 0 100 88" fill="none" aria-hidden="true" className="mb-4">
+          <circle cx="50" cy="44" r="34" fill="#06B6D4" fillOpacity="0.07" />
+          <rect x="28" y="24" width="44" height="40" rx="6" fill="white" stroke="#E2E8F0" strokeWidth="2" />
+          <path d="M50 36 L52.4 42.8 L59.5 42.8 L53.8 47.1 L56.1 54 L50 49.7 L43.9 54 L46.2 47.1 L40.5 42.8 L47.6 42.8 Z" fill="#E2E8F0" />
+        </svg>
+        <p className="font-medium text-slate-600 dark:text-slate-300">No reviews yet</p>
+        <p className="text-sm mt-1 text-slate-400">Reviews you write will appear here.</p>
       </div>
     )
   }
@@ -299,10 +303,13 @@ function SavedTab({
 }) {
   if (saved.length === 0) {
     return (
-      <div className="text-center py-16 text-slate-400">
-        <Bookmark className="size-10 mx-auto mb-3 opacity-30" />
-        <p className="font-medium">No saved providers</p>
-        <p className="text-sm mt-1">Bookmark doctors and hospitals to find them here.</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <svg width="100" height="88" viewBox="0 0 100 88" fill="none" aria-hidden="true" className="mb-4">
+          <circle cx="50" cy="44" r="34" fill="#06B6D4" fillOpacity="0.07" />
+          <path d="M38 28 L62 28 L62 62 L50 54 L38 62 Z" fill="white" stroke="#E2E8F0" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+        <p className="font-medium text-slate-600 dark:text-slate-300">No saved providers</p>
+        <p className="text-sm mt-1 text-slate-400">Bookmark doctors and hospitals to find them here.</p>
       </div>
     )
   }
