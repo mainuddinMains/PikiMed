@@ -208,6 +208,8 @@ export default function HospitalsClient({ hospitals: initial }: { hospitals: Hos
                       <button
                         onClick={() => openEdit(h)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-[#06B6D4] hover:bg-[#06B6D4]/10 transition-colors"
+                        aria-label="Edit hospital"
+                        title="Edit"
                       >
                         <Pencil className="size-3.5" />
                       </button>
@@ -215,6 +217,8 @@ export default function HospitalsClient({ hospitals: initial }: { hospitals: Hos
                         onClick={() => handleDelete(h)}
                         disabled={pending}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                        aria-label="Delete hospital"
+                        title="Delete"
                       >
                         <Trash2 className="size-3.5" />
                       </button>
