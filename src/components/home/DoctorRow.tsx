@@ -3,13 +3,20 @@
 import { useQuery } from "@tanstack/react-query"
 import { Star, Clock, Phone } from "lucide-react"
 import Link from "next/link"
+import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { DoctorCardSkeleton } from "./Skeletons"
 import type { Doctor } from "./types"
 import type { Region } from "@/store/regionStore"
 
 async function fetchDoctors(region: string): Promise<Doctor[]> {
-  const res = await fetch(`/api/doctors?region=${region}`)
+  let res: Response
+  try {
+    res = await fetch(`/api/doctors?region=${region}`)
+  } catch {
+    toast.error("Connection issue — please check your internet")
+    throw new Error("Network error")
+  }
   if (!res.ok) throw new Error("Failed to fetch doctors")
   return res.json()
 }
@@ -99,7 +106,7 @@ interface DoctorRowProps {
   inNetworkOnly?: boolean
 }
 
-export default function DoctorRow({ region, inNetworkOnly = false }: DoctorRowProps) {
+export default function DoctorRow({ region }: DoctorRowProps) {
   const { data: doctors, isLoading } = useQuery({
     queryKey: ["doctors", region],
     queryFn: () => fetchDoctors(region!),
