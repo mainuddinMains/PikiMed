@@ -9,7 +9,7 @@ import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { useHydratedRegion } from "@/lib/region"
 import { haversineKm } from "@/components/home/types"
-import FilterSidebar, { DEFAULT_FILTERS, type Filters } from "./FilterSidebar"
+import FilterSidebar, { type Filters } from "./FilterSidebar"
 import SortBar, { type SortOption, type ViewMode } from "./SortBar"
 import ResultCard from "./ResultCard"
 import type { SearchResponse, SearchItem } from "@/app/api/search/route"
@@ -99,7 +99,7 @@ export default function SearchPageClient({ mapboxToken }: SearchPageClientProps)
     const t = setTimeout(() => {
       setQuery(inputValue)
       const sp = new URLSearchParams(searchParams.toString())
-      inputValue ? sp.set("q", inputValue) : sp.delete("q")
+      if (inputValue) { sp.set("q", inputValue) } else { sp.delete("q") }
       router.replace(`/search?${sp.toString()}`, { scroll: false })
     }, 300)
     return () => clearTimeout(t)
