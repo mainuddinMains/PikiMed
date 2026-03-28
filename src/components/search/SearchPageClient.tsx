@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import dynamic from "next/dynamic"
 import { Search, X } from "lucide-react"
+import toast from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { useHydratedRegion } from "@/lib/region"
 import { haversineKm } from "@/components/home/types"
@@ -264,7 +265,13 @@ export default function SearchPageClient({ mapboxToken }: SearchPageClientProps)
                 {/* Empty state */}
                 {!isFetching && sortedItems.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <span className="text-5xl mb-4">🔍</span>
+                    <svg width="120" height="100" viewBox="0 0 120 100" fill="none" aria-hidden="true" className="mb-4">
+                      <circle cx="60" cy="50" r="38" fill="#06B6D4" fillOpacity="0.07" />
+                      <circle cx="54" cy="44" r="18" fill="white" stroke="#E2E8F0" strokeWidth="2" />
+                      <circle cx="54" cy="44" r="10" fill="#F1F5F9" />
+                      <line x1="67" y1="57" x2="80" y2="70" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" />
+                      <line x1="80" y1="70" x2="88" y2="62" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
                     <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
                       No results found
                     </p>
