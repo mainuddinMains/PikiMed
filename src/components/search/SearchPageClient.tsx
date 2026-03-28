@@ -250,7 +250,7 @@ export default function SearchPageClient({ mapboxToken }: SearchPageClientProps)
           {/* Results area */}
           <div className="flex-1 min-w-0">
             {view === "map" ? (
-              <div className="h-[70vh] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+              <div className="h-[50vh] sm:h-[70vh] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
                 <MapView
                   items={sortedItems}
                   mapboxToken={mapboxToken}
